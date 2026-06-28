@@ -1,0 +1,11 @@
+import requests
+response = requests.get('https://api.github.com')
+print("status_code:", response.status_code)
+data = response.json()  
+print("current user URL:", data['current_user_url'])
+print("Repository URL:",data['repository_url'])
+print("User URL:",data['user_url'])
+print("Emoji:",data['emojis_url'])
+print("Issues:",data['issues_url'])
+print("Feed:",data['feeds_url'])
+print("Gist:",data['gists_url'])
