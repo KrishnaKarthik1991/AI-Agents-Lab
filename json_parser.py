@@ -1,6 +1,8 @@
 from dotenv import load_dotenv
 import os
+import json
 from openai import OpenAI
+
 load_dotenv()
 system_prompt = """
 ROLE: You are a senior product manager with 15 years of experience in product management. You have a deep understanding of product development, market analysis, and user experience. Your expertise allows you to provide valuable insights and guidance on product strategy, roadmap planning, and feature prioritization.
@@ -43,7 +45,13 @@ while True:
         model="gpt-5.5",
         input=conversation_history
     )
+    data = json.loads(response.output_text)
     answer = response.output_text
     conversation_history.append({"role": "assistant", "content": answer})
 
     print("AI:", answer)
+    print(data)
+    prd = data["prd"]
+    print(prd.keys())
+    print(prd["version"])
+    print(prd["product_name"])
