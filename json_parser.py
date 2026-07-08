@@ -54,4 +54,4 @@ while True:
     prd = data["prd"]
     print(prd.keys())
     print(prd["version"])
-    print(prd["product_name"])
+    print(prd["product_name"]) 
