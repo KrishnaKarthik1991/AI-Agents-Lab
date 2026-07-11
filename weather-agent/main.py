@@ -24,9 +24,10 @@ tools = [
         }
     }
 ]
+user_question = input("Enter a question for the AI assistant: ")
 response = client.responses.create(
     model="gpt-5.5",
-    input="What is the current weather in Chennai?",
+    input=user_question,
     tools=tools,
 )
 print(response)
@@ -55,3 +56,39 @@ response2 = client.responses.create(
     ]
 )
 print(response2.output_text)
+while True :
+    user_question = input("Enter a question for the AI assistant: ")
+    response = client.responses.create(
+        model="gpt-5.5",
+        input=user_question,
+        tools=tools,
+    )
+    print(response)
+    print("------------------------------")
+    print(response.output)
+    tool_call = response.output[0]
+    print(tool_call.name)
+    print(tool_call.arguments)
+    import json
+    arguments = json.loads(tool_call.arguments)
+    city = arguments["city"]
+    result = get_weather(city)
+    print(type(result))
+    print("Weather result")
+    print(result)
+    tool_call_id = tool_call.call_id
+    response2 = client.responses.create(
+        model="gpt-5.5",
+        previous_response_id=response.id,
+        input=[
+            {
+                "type": "function_call_output",
+                "call_id": tool_call_id,
+                "output": result
+            }
+        ]
+    )
+    print(response2.output_text)
+    if user_question.lower() in ["exit", "quit"]:
+        break
+    
