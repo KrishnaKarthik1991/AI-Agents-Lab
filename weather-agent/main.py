@@ -1,3 +1,4 @@
+from tools import calculator
 from tools import get_weather
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -24,6 +25,23 @@ tools = [
         }
     }
 ]
+tools = [
+    {
+        "type": "function",
+        "name": "calculator",
+        "description": "Calculate the result of a mathematical expression.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "expression": {
+                    "type": "string",
+                    "description": "The mathematical expression to calculate."
+                }
+            },
+            "required": ["expression "]
+        }
+    }
+]
 user_question = input("Enter a question for the AI assistant: ")
 response = client.responses.create(
     model="gpt-5.5",
@@ -33,15 +51,26 @@ response = client.responses.create(
 print(response)
 print("------------------------------")
 print(response.output)
-tool_call = response.output[0]
+tool_call = None
+for item in response.output:
+    if item.type == "function_call":
+        tool_call = item
+        break
+if tool_call is None:
+    print(response.output_text)
+    exit()
 print(tool_call.name)
 print(tool_call.arguments)
 import json
 arguments = json.loads(tool_call.arguments)
-city = arguments["city"]
-result = get_weather(city)
+if tool_call.name == "get_weather":
+    city = arguments["city"]
+    result = get_weather(city)
+elif tool_call.name == "calculator":
+    expression = arguments["expression"]
+    result = calculator(expression)
 print(type(result))
-print("Weather result")
+print("Tool result")
 print(result)
 tool_call_id = tool_call.call_id
 response2 = client.responses.create(
@@ -58,6 +87,12 @@ response2 = client.responses.create(
 print(response2.output_text)
 while True :
     user_question = input("Enter a question for the AI assistant: ")
+    if user_question.lower() in ["exit", "quit"]:
+        print("Exiting the program.")
+        break
+    if tool_call is None:
+        print(response.output_text)
+        continue
     response = client.responses.create(
         model="gpt-5.5",
         input=user_question,
@@ -66,7 +101,14 @@ while True :
     print(response)
     print("------------------------------")
     print(response.output)
-    tool_call = response.output[0]
+    tool_call = None
+    for item in response.output:
+        if item.type == "function_call":
+            tool_call = item
+            break
+    if tool_call is None:
+        print(response.output_text)
+        continue
     print(tool_call.name)
     print(tool_call.arguments)
     import json
@@ -74,7 +116,7 @@ while True :
     city = arguments["city"]
     result = get_weather(city)
     print(type(result))
-    print("Weather result")
+    print("Tool result")
     print(result)
     tool_call_id = tool_call.call_id
     response2 = client.responses.create(
@@ -89,6 +131,3 @@ while True :
         ]
     )
     print(response2.output_text)
-    if user_question.lower() in ["exit", "quit"]:
-        break
-    

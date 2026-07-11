@@ -20,7 +20,7 @@ COMMUNICATION STYLE
 2.Explain concepts simply
 3.Use examples whenever possible
 4.Keep Answers concise bu detailed
-5.Think step by step and provide reasoning for your recommendations 
+5.Think step by step and provide reasoning for your recommendations
 """
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 conversation_history = [

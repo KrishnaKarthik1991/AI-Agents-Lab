@@ -4,4 +4,4 @@ def calculate(a,b):
     return a + b
 def greet(name):
     return f"Hello, {name}! Welcome to the AI Agents Lab."
-question = input("Enter a question for the AI assistant: ").lower()
+question = input("Enter a question for the AI assistant: ").lower() 
