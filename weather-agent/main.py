@@ -1,13 +1,14 @@
+from xmlrpc import client
 from tools import calculator
 from tools import get_weather
 from openai import OpenAI
 from dotenv import load_dotenv
+from tool_router import execute_tool
 import os
-
-import requests
-
 load_dotenv()
 client = OpenAI()
+import requests
+from llm_router import ask_llm, send_tool_result
 tools = [
     {
         "type": "function",
@@ -23,9 +24,7 @@ tools = [
             },
             "required": ["city"]
         }
-    }
-]
-tools = [
+    },
     {
         "type": "function",
         "name": "calculator",
@@ -43,11 +42,7 @@ tools = [
     }
 ]
 user_question = input("Enter a question for the AI assistant: ")
-response = client.responses.create(
-    model="gpt-5.5",
-    input=user_question,
-    tools=tools,
-)
+response = ask_llm(user_question, tools)
 print(response)
 print("------------------------------")
 print(response.output)
@@ -63,28 +58,12 @@ print(tool_call.name)
 print(tool_call.arguments)
 import json
 arguments = json.loads(tool_call.arguments)
-if tool_call.name == "get_weather":
-    city = arguments["city"]
-    result = get_weather(city)
-elif tool_call.name == "calculator":
-    expression = arguments["expression"]
-    result = calculator(expression)
+from tool_router import execute_tool
+result = execute_tool(tool_call.name,arguments)
 print(type(result))
 print("Tool result")
 print(result)
-tool_call_id = tool_call.call_id
-response2 = client.responses.create(
-    model="gpt-5.5",
-    previous_response_id=response.id,
-    input=[
-        {
-            "type": "function_call_output",
-            "call_id": tool_call_id,
-            "output": result
-        }
-    ]
-)
-print(response2.output_text)
+tool_call_id = tool_call.call_id 
 while True :
     user_question = input("Enter a question for the AI assistant: ")
     if user_question.lower() in ["exit", "quit"]:
@@ -93,11 +72,7 @@ while True :
     if tool_call is None:
         print(response.output_text)
         continue
-    response = client.responses.create(
-        model="gpt-5.5",
-        input=user_question,
-        tools=tools,
-    )
+    response = ask_llm(user_question, tools)
     print(response)
     print("------------------------------")
     print(response.output)
@@ -113,21 +88,27 @@ while True :
     print(tool_call.arguments)
     import json
     arguments = json.loads(tool_call.arguments)
-    city = arguments["city"]
-    result = get_weather(city)
+    try:
+        result = execute_tool(tool_call.name,**arguments)
+    except Exception as e:
+        result = f"Tool Error: {str(e)}"
     print(type(result))
     print("Tool result")
     print(result)
     tool_call_id = tool_call.call_id
-    response2 = client.responses.create(
-        model="gpt-5.5",
-        previous_response_id=response.id,
-        input=[
+    response2 = send_tool_result(
+        response.id,
+        tool_call_id,
+        result
+    )
+    print(response2.output_text)
+    model="gpt-5.5",
+    previous_response_id=response.id,
+    input=[
             {
                 "type": "function_call_output",
                 "call_id": tool_call_id,
                 "output": result
             }
         ]
-    )
     print(response2.output_text)
