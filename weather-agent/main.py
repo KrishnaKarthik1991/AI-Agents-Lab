@@ -37,7 +37,17 @@ tools = [
                     "description": "The mathematical expression to calculate."
                 }
             },
-            "required": ["expression "]
+            "required": ["expression"]
+        }
+    },
+    {
+        "type": "function",
+        "name": "get_time",
+        "description": "Get the current time.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": []
         }
     }
 ]
@@ -59,7 +69,18 @@ print(tool_call.arguments)
 import json
 arguments = json.loads(tool_call.arguments)
 from tool_router import execute_tool
-result = execute_tool(tool_call.name,arguments)
+result = execute_tool(tool_call.name,**arguments)
+response2 = send_tool_result(
+    response.id,
+    tool_call.call_id,
+    result
+)
+print("======= RESPONSE 2 =======")
+print(response2)
+print("--------------------")
+print(response2.output)
+print("-------------------------")
+print(response2.output_text)
 print(type(result))
 print("Tool result")
 print(result)

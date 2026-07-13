@@ -5,3 +5,6 @@ def get_weather(city):
     return response.text
 def calculator(expression):
     return str(eval(expression))
+from datetime import datetime
+def get_time():
+    return datetime.now().strftime("%I:%M %p")

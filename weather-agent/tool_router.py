@@ -1,7 +1,8 @@
-from tools import get_weather, calculator
+from tools import get_time, get_weather, calculator
 available_tools = {
     "get_weather": get_weather,
-    "calculator": calculator
+    "calculator": calculator,
+    "get_time": get_time
 }
 def execute_tool(tool_name, **arguments):
     tool_function = available_tools.get(tool_name)
