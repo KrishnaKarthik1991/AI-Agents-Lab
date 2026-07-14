@@ -1,14 +1,15 @@
-from xmlrpc import client
-from tools import calculator
-from tools import get_weather
+from tools.weather import get_weather
+from tools.calculator import calculator
+from tools.time_tool import get_time
+from tools.joke import get_joke
 from openai import OpenAI
 from dotenv import load_dotenv
-from tool_router import execute_tool
+from routers.tool_router import execute_tool
 import os
 load_dotenv()
 client = OpenAI()
 import requests
-from llm_router import ask_llm, send_tool_result
+from routers.llm_router import ask_llm, send_tool_result
 tools = [
     {
         "type": "function",
@@ -49,6 +50,16 @@ tools = [
             "properties": {},
             "required": []
         }
+    },
+    {
+        "type": "function",
+        "name": "get_joke",
+        "description": "get a random joke.",
+        "parameters": {
+            "type": "object",
+            "properties":{},
+            "required":[]
+        }
     }
 ]
 user_question = input("Enter a question for the AI assistant: ")
@@ -68,7 +79,6 @@ print(tool_call.name)
 print(tool_call.arguments)
 import json
 arguments = json.loads(tool_call.arguments)
-from tool_router import execute_tool
 result = execute_tool(tool_call.name,**arguments)
 response2 = send_tool_result(
     response.id,
@@ -98,38 +108,29 @@ while True :
     print("------------------------------")
     print(response.output)
     tool_call = None
+
     for item in response.output:
-        if item.type == "function_call":
-            tool_call = item
-            break
+     if item.type == "function_call":
+        tool_call = item
+        break
+    print("="*50)
+    print(response.output)
+    print("="*50)
     if tool_call is None:
-        print(response.output_text)
-        continue
-    print(tool_call.name)
-    print(tool_call.arguments)
-    import json
+     print(response.output_text)
+    continue
+
+    print("Selected Tool:", tool_call.name)
+    print("Arguments:", tool_call.arguments)
+
     arguments = json.loads(tool_call.arguments)
     try:
-        result = execute_tool(tool_call.name,**arguments)
+        result = execute_tool(tool_call.name, **arguments)
     except Exception as e:
-        result = f"Tool Error: {str(e)}"
-    print(type(result))
-    print("Tool result")
-    print(result)
-    tool_call_id = tool_call.call_id
+        result = f"Tool Error: {e}"
     response2 = send_tool_result(
         response.id,
-        tool_call_id,
+        tool_call.call_id,
         result
-    )
-    print(response2.output_text)
-    model="gpt-5.5",
-    previous_response_id=response.id,
-    input=[
-            {
-                "type": "function_call_output",
-                "call_id": tool_call_id,
-                "output": result
-            }
-        ]
+)
     print(response2.output_text)
