@@ -1,10 +1,14 @@
+# Third party Libraries
 from dotenv import load_dotenv
 from openai import OpenAI
+# Local project Imports
+from prompts import SYSTEM_PROMPT
 load_dotenv()
 client = OpenAI()
 def ask_llm(question, tools):
     response = client.responses.create(
         model="gpt-5.5",
+        instructions=SYSTEM_PROMPT,
         input=question,
         tools=tools,
     )

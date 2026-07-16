@@ -28,14 +28,3 @@ def process_question(question):
     )
 
     return response2.output_text
-
-while True:
-
-    question = input("Ask: ")
-
-    if question.lower() in ["exit", "quit"]:
-        break
-
-    answer = process_question(question)
-
-    print(answer)
