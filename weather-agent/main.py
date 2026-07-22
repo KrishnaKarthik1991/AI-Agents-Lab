@@ -4,8 +4,8 @@ from routers.llm_router import ask_llm,send_tool_result
 from routers.tool_router import execute_tool
 from tool_schema import tools
 
-def process_question(question):
-    response = ask_llm(question, tools)
+def process_question(question, previous_response_id=None):
+    response = ask_llm(question, tools,previous_response_id)
 
     tool_call = None
 
@@ -15,7 +15,10 @@ def process_question(question):
             break
 
     if tool_call is None:
-        return response.output_text
+        return {
+            "answer":response.output_text,
+            "response_id":response.id
+        }
 
     arguments = json.loads(tool_call.arguments)
 
@@ -27,4 +30,7 @@ def process_question(question):
         result
     )
 
-    return response2.output_text
+    return { 
+        "answer":response2.output_text,
+        "response_id":response2.id
+    }

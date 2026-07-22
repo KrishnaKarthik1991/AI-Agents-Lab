@@ -5,12 +5,20 @@ from openai import OpenAI
 from prompts import SYSTEM_PROMPT
 load_dotenv()
 client = OpenAI()
-def ask_llm(question, tools):
-    response = client.responses.create(
-        model="gpt-5.5",
-        instructions=SYSTEM_PROMPT,
-        input=question,
-        tools=tools,
+def ask_llm(question, tools , previous_response_id=None):
+    if previous_response_id:
+        response = client.responses.create(
+            model="gpt-5.5",
+            previous_response_id=previous_response_id,
+            input=question,
+            tools=tools,
+        )
+    else:
+        response = client.responses.create(
+            model="gpt-5.5",
+            instructions=SYSTEM_PROMPT,
+            input=question,
+            tools=tools,
     )
     return response
 def send_tool_result(previous_response_id, tool_call_id, result):
